@@ -29,9 +29,11 @@ int main(int argc, char* args[]) {
     int i;
     int cpCount = 1;
 
+    // allocate threads
 	pthread_t pid[MAX_PC];
     pthread_t cid[MAX_PC];
 
+    // check program arguments
     if(argc > 1){
         cpCount = atoi(args[1]);
 
@@ -41,24 +43,26 @@ int main(int argc, char* args[]) {
         }
     }
 
-    //pid = new pthread_t;
-    //cid = new pthread_t;
-
 	// Initialie the semaphores
 	sem_init(&empty, SHARED, BUF_SIZE);
 	sem_init(&full, SHARED, 0);
     sem_init(&prod_iter, SHARED, 0);
     sem_init(&cons_iter, SHARED, 0);
+
 	// Initialize the mutex
 	pthread_mutex_init(&mutex,0);
 
 	// Create the threads
 	printf("main started\n");
 
-    printf("cpCount: %d\n", cpCount);
+    // loop all threads
     for(i = 0; i < cpCount; i++){
+
+        // allocate id in heap
         int* id = malloc(sizeof(int));
         *id = i;
+
+        // create requested threads
         if(pthread_create(&pid[i], NULL, Producer, id) != 0){
             printf("failed to create producer thread at i = %d\n", i);
         }
@@ -88,6 +92,8 @@ void *Producer(void *arg) {
 	int i=0, j;
 
     printf("\nProducer%d\n", *id);
+
+    // check how much is produced
     sem_getvalue(&cons_iter, &i);
 	while(i < NUM_ITER) {
 
@@ -133,6 +139,8 @@ void *Consumer(void *arg) {
 	int i=0, j;
 
     printf("\nConsumer%d\n", *id);
+
+    // check how much is consumed
     sem_getvalue(&cons_iter, &i);
 	while(i < NUM_ITER) {
 		// Wait a random amount of time, simulating consuming of an item.
