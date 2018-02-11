@@ -7,7 +7,7 @@
 #define SHARED 0        /* process-sharing if !=0, thread-sharing if =0*/
 #define BUF_SIZE 20
 #define MAX_MOD 100000
-#define NUM_ITER 200
+#define NUM_ITER 20000
 #define MAX_PC 200         /* max Producer and Consumer*/
 
 void* Producer(void *); /* Producer thread */
@@ -15,7 +15,10 @@ void* Consumer(void *); /* Consumer thread */
 
 sem_t empty;            /* empty: How many empty buffer slots */
 sem_t full;             /* full: How many full buffer slots */
+sem_t prod_iter;            /* empty: How many empty buffer slots */
+sem_t cons_iter;            /* empty: How many empty buffer slots */
 pthread_mutex_t mutex;  /* mutex: Mutex lock */
+
 
 int g_data[BUF_SIZE];   /* shared finite buffer  */
 int g_idx;              /* index to next available slot in buffer,
@@ -30,7 +33,7 @@ int main(int argc, char* args[]) {
     pthread_t cid[MAX_PC];
 
     if(argc > 1){
-        int cpCount = atoi(args[1]);
+        cpCount = atoi(args[1]);
 
         if(cpCount > MAX_PC){
             printf("max pc is %d setting pc to max\n", MAX_PC);
@@ -44,17 +47,22 @@ int main(int argc, char* args[]) {
 	// Initialie the semaphores
 	sem_init(&empty, SHARED, BUF_SIZE);
 	sem_init(&full, SHARED, 0);
+    sem_init(&prod_iter, SHARED, 0);
+    sem_init(&cons_iter, SHARED, 0);
 	// Initialize the mutex
 	pthread_mutex_init(&mutex,0);
 
 	// Create the threads
 	printf("main started\n");
 
+    printf("cpCount: %d\n", cpCount);
     for(i = 0; i < cpCount; i++){
-        if(pthread_create(&pid[i], NULL, Producer, &i) != 0){
+        int* id = malloc(sizeof(int));
+        *id = i;
+        if(pthread_create(&pid[i], NULL, Producer, id) != 0){
             printf("failed to create producer thread at i = %d\n", i);
         }
-    	if(pthread_create(&cid[i], NULL, Consumer, &i) != 0){
+    	if(pthread_create(&cid[i], NULL, Consumer, id) != 0){
             printf("failed to create consumer thread at i = %d\n", i);
         }
     }
@@ -79,17 +87,19 @@ void *Producer(void *arg) {
 
 	int i=0, j;
 
+    printf("\nProducer%d\n", *id);
+    sem_getvalue(&cons_iter, &i);
 	while(i < NUM_ITER) {
-		// pretend to generate an item by a random wait
-		usleep(rand()%MAX_MOD);
 
+		// pretend to generate an item by a random wait
+        usleep(rand()%MAX_MOD);
 		// Wait for at least one empty slot
 		sem_wait(&empty);
 		// Wait for exclusive access to the buffer
 		pthread_mutex_lock(&mutex);
 
 		// Check if there is content there already. If so, print
-    // a warning and exit.
+        // a warning and exit.
 		if(g_data[g_idx] == 1) {
 			printf("Producer%d overwrites!, idx er %d\n", *id, g_idx);
 			exit(0);
@@ -107,8 +117,10 @@ void *Producer(void *arg) {
 		pthread_mutex_unlock(&mutex);
 		// Increase the counter of full bufferslots.
 		sem_post(&full);
+        sem_post(&prod_iter);
 
-		i++;
+        sem_getvalue(&prod_iter, &i);
+
 	}
 
 	return 0;
@@ -120,6 +132,8 @@ void *Consumer(void *arg) {
 
 	int i=0, j;
 
+    printf("\nConsumer%d\n", *id);
+    sem_getvalue(&cons_iter, &i);
 	while(i < NUM_ITER) {
 		// Wait a random amount of time, simulating consuming of an item.
 		usleep(rand()%MAX_MOD);
@@ -130,7 +144,7 @@ void *Consumer(void *arg) {
 		pthread_mutex_lock(&mutex);
 
 		// Checked that the buffer actually contains some data
-    // at the current slot.
+        // at the current slot.
 		if(g_data[g_idx-1] == 0) {
 			printf("Consumes nothing at id %d!, idx er %d\n", *id, g_idx);
 			exit(0);
@@ -148,8 +162,9 @@ void *Consumer(void *arg) {
 		pthread_mutex_unlock(&mutex);
 		// Increase the counter of empty slots.
 		sem_post(&empty);
+        sem_post(&cons_iter);
+        sem_getvalue(&cons_iter, &i);
 
-		i++;
 	}
 
 	return 0;
