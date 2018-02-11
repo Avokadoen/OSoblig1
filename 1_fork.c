@@ -13,13 +13,16 @@ void process(int number, int time) {
 }
 
 int processValidation(pid_t p){
+    /* process failed*/
     if(p == -1){
         perror("fork failed");
         exit(EXIT_FAILURE);
     }
+    /* ok */
     else if(p == 0){
         return 1;
     }
+
     return 0;
 }
 
@@ -62,17 +65,3 @@ int main(void){
     return EXIT_SUCCESS;
 
 }
-
-
-/*else{
-    process(0, 1);
-    int p2 = fork();
-    if(p2==0){
-        process(1, 2);
-        process(3, 2);
-    }
-    else{
-        process(4, 3);
-        process(5, 3);
-    }
-}*/
