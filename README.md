@@ -17,7 +17,9 @@ Vi gjorde det med alle filene, men kun en er skrevet for ikke å repetere så my
 
 
 valgrind --leak-check=yes *fil*.c
+
 valgrind --leak-check=yes *fil* <- compiled fil
 
 valgrind --tool=helgrind .*fil*.c
+
 valgrind --tool=helgrind *fil* <- compiled fil
