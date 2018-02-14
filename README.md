@@ -16,6 +16,8 @@ Vi gjorde det med alle filene, men kun en er skrevet for ikke å repetere så my
 1_producer_consumer.c
 
 
-valgrind --leak-check=yes ./1_fork.c
+valgrind --leak-check=yes *fil*.c
+valgrind --leak-check=yes *fil* <- compiled fil
 
-valgrind --tool=helgrind ./1_fork.c
+valgrind --tool=helgrind .*fil*.c
+valgrind --tool=helgrind *fil* <- compiled fil
