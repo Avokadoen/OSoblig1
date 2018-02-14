@@ -60,7 +60,11 @@ int main(void){
                     process(5, 3);
                 }
             }
+            if(EXIT_FAILURE == waitpid(p3, NULL, 0)){
+                exit(EXIT_FAILURE);
+            }
         }
+
     }
     return EXIT_SUCCESS;
 
