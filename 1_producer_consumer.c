@@ -27,9 +27,9 @@ int g_idx;              /* index to next available slot in buffer,
 
 int main(int argc, char* args[]) {
     int i;
-    int cpCount = 1;
+    int cpCount = 5;
 
-    // allocate threads
+    // declare threads
 	pthread_t pid[MAX_PC];
     pthread_t cid[MAX_PC];
 
@@ -94,7 +94,7 @@ void *Producer(void *arg) {
     printf("\nProducer%d\n", *id);
 
     // check how much is produced
-    sem_getvalue(&cons_iter, &i);
+    sem_getvalue(&prod_iter, &i);
 	while(i < NUM_ITER) {
 
 		// pretend to generate an item by a random wait

@@ -25,9 +25,9 @@ nummer
 sem_t active[THREAD_COUNT];
 
 struct threadargs {
-    int id;         /* thread number */
-    int sec;        /* how many seconds to sleep */
-    int signal[THREAD_COUNT];  /* which threads to signal when done */
+    int id;                     /* thread number */
+    int sec;                    /* how many seconds to sleep */
+    int signal[THREAD_COUNT];   /* which threads to signal when done */
 };
 
 void *tfunc(void *arg) {
@@ -104,9 +104,9 @@ int main(void)
     for (i=0;i<THREAD_COUNT;i++) {
         if(pthread_join(threads[i], NULL)){
             printf("%s\n", "failed to join thread");
-            return -1;
+            return EXIT_FAILURE;
         }
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

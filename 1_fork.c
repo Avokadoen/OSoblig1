@@ -22,11 +22,9 @@ int processValidation(pid_t p){
     else if(p == 0){
         return 1;
     }
-
     return 0;
 }
 
-// TODO: validation fork
 int main(void){
     pid_t p1 = fork();
     if(processValidation(p1)){
